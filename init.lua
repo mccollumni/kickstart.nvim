@@ -175,6 +175,9 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
+-- Disable the 's' key, I never use it and it conflicts with mini.surround
+vim.keymap.set('n', 's', '<NOP>', { noremap = true, silent = true } )
+
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
@@ -249,18 +252,27 @@ require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-fugitive',
   'sodapopcan/vim-twiggy',
+  'christoomey/vim-tmux-navigator',
+  'eshasnovski/mini.animate',
   'edkolev/tmuxline.vim',
-  's1n7ax/nvim-window-picker',
   {
-    'kylechui/nvim-surround',
-    version = '*',
-    event = 'VeryLazy',
+    'startup-nvim/startup.nvim',
+    dependencies = { 'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope-file-browser.nvim' },
     config = function()
-      require('nvim-surround').setup {
-        -- Configuration here, or leave empty to use defaults
-      }
+      require('startup').setup()
     end,
   },
+  's1n7ax/nvim-window-picker',
+  -- {
+  --   'kylechui/nvim-surround',
+  --   version = '*',
+  --   event = 'VeryLazy',
+  --   config = function()
+  --     require('nvim-surround').setup {
+  --       -- Configuration here, or leave empty to use defaults
+  --     }
+  --   end,
+  -- },
   'Pocco81/auto-save.nvim',
   {
     'kdheepak/lazygit.nvim',
@@ -279,7 +291,7 @@ require('lazy').setup({
     -- setting the keybinding for LazyGit with 'keys' is recommended in
     -- order to load the plugin when the command is run for the first time
     keys = {
-      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+      { '<leader>gg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
     },
   },
   {
@@ -430,6 +442,8 @@ require('lazy').setup({
         pickers = {
           find_files = {
             hidden = true,
+            no_ignore = true,
+            no_ignore_parent = true
           },
           colorscheme = {
             enable_preview = true,
@@ -895,6 +909,8 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+
+      require('mini.animate').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
