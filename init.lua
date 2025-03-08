@@ -154,6 +154,8 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 15
 
+vim.g.python3_host_prog = '/Users/nickmccollum/.pyenv/versions/3.9.0/bin/python'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -176,7 +178,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- Disable the 's' key, I never use it and it conflicts with mini.surround
-vim.keymap.set('n', 's', '<NOP>', { noremap = true, silent = true } )
+vim.keymap.set('n', 's', '<NOP>', { noremap = true, silent = true })
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -253,26 +255,60 @@ require('lazy').setup({
   'tpope/vim-fugitive',
   'sodapopcan/vim-twiggy',
   'christoomey/vim-tmux-navigator',
-  'eshasnovski/mini.animate',
   'edkolev/tmuxline.vim',
   {
-    'startup-nvim/startup.nvim',
-    dependencies = { 'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope-file-browser.nvim' },
+    'goolord/alpha-nvim',
+    -- dependencies = { 'echasnovski/mini.icons' },
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
-      require('startup').setup()
+      local startify = require 'alpha.themes.startify'
+      -- available: devicons, mini, default is mini
+      -- if provider not loaded and enabled is true, it will try to use another provider
+      startify.file_icons.provider = 'devicons'
+      require('alpha').setup(startify.config)
     end,
   },
   's1n7ax/nvim-window-picker',
-  -- {
-  --   'kylechui/nvim-surround',
-  --   version = '*',
-  --   event = 'VeryLazy',
-  --   config = function()
-  --     require('nvim-surround').setup {
-  --       -- Configuration here, or leave empty to use defaults
-  --     }
-  --   end,
-  -- },
+  {
+    'nvim-neotest/neotest',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-neotest/neotest-python',
+    },
+    config = function()
+      require('neotest').setup {
+        adapters = {
+          require 'neotest-python' {
+            dap = { justMyCode = false },
+            args = { '--maxfail=1', '--verbose' },
+          },
+        },
+      }
+
+      vim.keymap.set('n', '<leader>tt', ":lua require('neotest').run.run({ watch = true })<CR>", { noremap = true, silent = true, desc = 'Run nearest [t]est' })
+      vim.keymap.set(
+        'n',
+        '<leader>tf',
+        ":lua require('neotest').run.run(vim.fn.expand('%'))<CR>",
+        { noremap = true, silent = true, desc = 'Run tests in [f]ile' }
+      )
+      vim.keymap.set('n', '<leader>ts', ":lua require('neotest').summary.toggle()<CR>", { noremap = true, silent = true, desc = 'Show test [s]ummary panel' })
+      vim.keymap.set(
+        'n',
+        '<leader>to',
+        ":lua require('neotest').output_panel.toggle()<CR>",
+        { noremap = true, silent = true, desc = 'Show test [o]utput panel' }
+      )
+      vim.keymap.set('n', '<leader>ta', ":lua require('neotest').run.run(vim.fn.getcwd())<CR>", { noremap = true, silent = true, desc = 'Run [a]ll tests' })
+      vim.keymap.set('n', '<leader>ti', function()
+        local t = require 'neotest'
+        t.output_panel.toggle()
+        t.summary.toggle()
+        t.run.run(vim.fn.expand '%')
+      end, { noremap = true, silent = true, desc = '[I]nitialize test session' })
+    end,
+  },
   'Pocco81/auto-save.nvim',
   {
     'kdheepak/lazygit.nvim',
@@ -351,27 +387,32 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
-  { -- Useful plugin to show you pending keybinds.
+  {
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
-
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-        ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-      }
-      -- visual mode
-      require('which-key').register({
-        ['<leader>h'] = { 'Git [H]unk' },
-      }, { mode = 'v' })
-    end,
+    event = 'VeryLazy', -- consider VimEnter event
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
+    keys = {
+      {
+        '<leader>?',
+        function()
+          local wk = require 'which-key'
+          wk.add {
+            { '', group = '[S]earch' },
+            { '', group = '[D]ocument' },
+            { '', desc = '<leader>h' },
+            { '', group = '[C]ode' },
+            { '', group = '[T]oggle' },
+            { '', group = '[W]orkspace' },
+            { '', group = '[R]ename' },
+            { '', desc = 'Git [H]unk' },
+          }
+        end,
+      },
+    },
   },
 
   -- NOTE: Plugins can specify dependencies.
@@ -443,7 +484,7 @@ require('lazy').setup({
           find_files = {
             hidden = true,
             no_ignore = true,
-            no_ignore_parent = true
+            no_ignore_parent = true,
           },
           colorscheme = {
             enable_preview = true,
@@ -895,14 +936,6 @@ require('lazy').setup({
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
     config = function()
-      -- Better Around/Inside textobjects
-      --
-      -- Examples:
-      --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [']quote
-      --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
-
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
@@ -910,12 +943,11 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
-      require('mini.animate').setup()
-
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
+
       -- set use_icons to true if you have a Nerd Font
       statusline.setup { use_icons = vim.g.have_nerd_font }
 
