@@ -168,8 +168,8 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-vim.keymap.set('n', ']q', ':cnext<CR>', { desc = 'Next quicklist item' })
-vim.keymap.set('n', '[q', ':cprev<CR>', { desc = 'Prev quicklist item' })
+vim.keymap.set('n', ']q', vim.cmd.cnext, { desc = 'Next quicklist item' })
+vim.keymap.set('n', '[q', vim.cmd.cprev, { desc = 'Prev quicklist item' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -257,6 +257,8 @@ require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-fugitive',
   'sodapopcan/vim-twiggy',
+  'ThePrimeagen/harpoon',
+  'mbbill/undotree',
   'christoomey/vim-tmux-navigator',
   -- {
   --   'mfussenegger/nvim-jdtls',
@@ -516,6 +518,21 @@ require('lazy').setup({
           },
         },
       }
+
+      -- undotree
+      vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
+
+      -- harpoon
+      vim.keymap.set('n', '<leader>ha', ":lua require('harpoon.mark').add_file()<CR>", { desc = '[H]arpoon [a]dd file'})
+      vim.keymap.set('n', '<leader>ho', ":lua require('harpoon.ui').toggle_quick_menu()<CR>", { desc = '[H]arpoon [o]pen quick menu'})
+      vim.keymap.set('n', '<leader>h1', ":lua require('harpoon.ui').nav_file(1)<CR>", { desc = '[H]arpoon navigate to file 1'})
+      vim.keymap.set('n', '<leader>h2', ":lua require('harpoon.ui').nav_file(2)<CR>", { desc = '[H]arpoon navigate to file 2'})
+      vim.keymap.set('n', '<leader>h3', ":lua require('harpoon.ui').nav_file(3)<CR>", { desc = '[H]arpoon navigate to file 3'})
+      vim.keymap.set('n', '<leader>h4', ":lua require('harpoon.ui').nav_file(4)<CR>", { desc = '[H]arpoon navigate to file 4'})
+
+      vim.keymap.set('n', '<leader>hl', ":lua require('harpoon.ui').nav_next()<CR>", { desc = '[H]arpoon navigate next'})
+      vim.keymap.set('n', '<leader>hh', ":lua require('harpoon.ui').nav_prev()<CR>", { desc = '[H]arpoon navigate prev'})
+
 
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
